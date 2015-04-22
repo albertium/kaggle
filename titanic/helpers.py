@@ -21,5 +21,5 @@ class BayesClassifier(BaseEstimator):
 	def __init__(self):
 		pass
 
-	def 
-	
+	def fit(self, X, y):
+		
