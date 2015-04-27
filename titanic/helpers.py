@@ -1,6 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, \
-		PolynomialFeatures
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import PolynomialFeatures, Imputer
 import numpy as np
 import pandas as pd
 
@@ -125,3 +125,31 @@ class GenericPolyFeatures(BaseEstimator, TransformerMixin):
 
 		# combine interaction, dummies and continuous features
 		return np.hstack([np.ones((X.shape[0], 1)), cross, cont])
+
+class GenericImputer(BaseEstimator, TransformerMixin):
+	def __init__(self, cols, methods):
+		if len(cols) != len(methods):
+			raise ValueError('columns and methods not match')
+		
+		self.im = dict()
+		for col, method in zip(cols, methods):
+			self.im(col) = Imputer(strategy=method)
+
+	def __fit__(self, X, y=None):
+		for	col, im in self.im.iteritems():
+			im.fit(X[, col:col+1]	
+
+
+	def __transform__(self, X):
+		X = X.copy()
+		for col, im in self.im.iteritems():
+			X[, col] = im.transform(X[, col:col+1])	
+
+		return X
+
+	def __fit_transform__(self, X, y=None):
+		X = X.copy()
+		for col, im in self.im.iteritems():
+			X[, col] = im.fit_transform(X[, col:col+1])	
+
+		return X
