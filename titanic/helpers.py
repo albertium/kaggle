@@ -133,23 +133,23 @@ class GenericImputer(BaseEstimator, TransformerMixin):
 		
 		self.im = dict()
 		for col, method in zip(cols, methods):
-			self.im(col) = Imputer(strategy=method)
+			self.im[col] = Imputer(strategy=method, axis=1)
 
-	def __fit__(self, X, y=None):
+	def fit(self, X, y=None):
 		for	col, im in self.im.iteritems():
-			im.fit(X[, col:col+1]	
+			im.fit(X[:, col:col+1])
 
 
-	def __transform__(self, X):
+	def transform(self, X):
 		X = X.copy()
 		for col, im in self.im.iteritems():
-			X[, col] = im.transform(X[, col:col+1])	
+			X[:, col] = im.transform(X[:, col])	
 
 		return X
 
-	def __fit_transform__(self, X, y=None):
+	def fit_transform(self, X, y=None):
 		X = X.copy()
 		for col, im in self.im.iteritems():
-			X[, col] = im.fit_transform(X[, col:col+1])	
+			X[:, col] = im.fit_transform(X[:, col])	
 
 		return X
