@@ -99,9 +99,8 @@ class GenericPolyFeatures(BaseEstimator, TransformerMixin):
 		return self
 
 	def transform(self, X):
-		# transform for interction only and exclude duplicate zeros
+		# transform for interction only 
 		cross = self.poly_cross.transform(X)
-		cross = cross[:, -np.all(cross==0, axis=0)]
 
 		# transform for continuous features
 		cont = np.hstack([self.poly_cont.transform(X[:, idx:idx+1])[:, 1:] \
@@ -114,9 +113,8 @@ class GenericPolyFeatures(BaseEstimator, TransformerMixin):
 		# standardize continuous feature index
 		self.conts = np.arange(X.shape[1])[self.conts]
 
-		# transform for interction only and exclude duplicate zeros
+		# transform for interction only 
 		cross = self.poly_cross.fit_transform(X)
-		cross = cross[:, -np.all(cross==0, axis=0)]
 
 		# transform for continuous features
 		cont = np.hstack( \
@@ -153,3 +151,26 @@ class GenericImputer(BaseEstimator, TransformerMixin):
 			X[:, col] = im.fit_transform(X[:, col])	
 
 		return X
+
+class RedundancyRemover(BaseEstimator, TransformerMixin):
+	def __init__(self):
+		return None
+
+	def fit(self, X, y=None):
+		# mark 0 features
+		to_keep = []
+		check = dict()
+		for i in range(X.shape[1]):
+			if np.any(X[:, i]!=0) and tuple(X[:, i]) not in check:
+				to_keep.append(i)
+				check[tuple(X[:, i])] = 1
+
+		self.to_keep = to_keep
+		return self
+
+	def transform(self, X):
+		return X[:, self.to_keep]
+
+	def fit_transform(self, X, y=None):
+		self.fit(X)
+		return X[:, self.to_keep]
