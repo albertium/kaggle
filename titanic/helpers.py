@@ -33,19 +33,21 @@ class MultiLabelEncoder(BaseEstimator, TransformerMixin):
 
 	def fit(self, X, y=None):
 		for col, le in self.le.iteritems():
-			le.fit(X[:, col])
+			le.fit(X[-np.isnan(X[:, col]), col])
 			
 	def transform(self, X):
 		X = X.copy()
 		for col, le in self.le.iteritems():
-			X[:, col] = le.transform(X[:, col])
+			X[-np.isnan(X[:, col]), col] = \
+					le.transform(X[-np.isnan(X[:, col]), col])
 
 		return np.array(X, dtype='float32')
 
 	def fit_transform(self, X, y=None):
 		X = X.copy()
 		for col, le in self.le.iteritems():
-			X[:, col] = le.fit_transform(X[:, col])
+			X[-np.isnan(X[:, col]), col] = \
+					le.fit_transform(X[-np.isnan(X[:, col]), col])
 
 		return np.array(X, dtype='float32')
 
