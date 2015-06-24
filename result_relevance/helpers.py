@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 class ColumnExtractor(BaseEstimator, TransformerMixin):
@@ -73,17 +74,20 @@ class TFIDFVectorizer2(BaseEstimator, TransformerMixin):
 
 	def __init__(self, b=0.7):
 		self.b = b
+		self.cv = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}', ngram_range=(1, 1), \
+                     		     stop_words='english', lowercase=True, strip_accents='unicode', min_df=3)
 
 	def fit(self, X, y=None):
-		n_docs, n_words = X.shape
+		X_matrix = self.cv.fit_transform(X)
+		n_docs, n_words = X_matrix.shape
 
 		# calculate IDF
-		df = np.bincount(X.indices, min_length=n_words)
+		df = np.bincount(X_matrix.indices, minlength=n_words)
 		idf = np.log((n_docs+1) / df)
 		self.idf_diag = sp.spdiags(idf, diags=0, m=n_words, n=n_words)
 
 		# calculate doc length normalizaton
-		dl = X.sum(axis=1)
+		dl = X_matrix.sum(axis=1)
 		dl_norm = 1 - self.b + self.b * dl / dl.mean()
 		self.dl_diag = sp.spdiags(1/np.ravel(dl_norm), diags=0, m=n_docs, n=n_docs)
 
@@ -91,7 +95,8 @@ class TFIDFVectorizer2(BaseEstimator, TransformerMixin):
 
 	def transform(self, X):
 		#calculate TF
-		tf = X.copy()
+		X_matrix = self.cv.transform(X)
+		tf = X_matrix.copy()
 		tf.data = np.log(1 + np.log(1 + tf.data))
 
 		return self.dl_diag * tf * self.idf_diag
